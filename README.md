@@ -24,6 +24,9 @@ src/
 scripts/
   plan-bump.mjs            picks exactly one outdated package
   check-lockfile.mjs       rejects wide package-lock diffs before a PR
+worker/
+  jobs.py                  background-job helpers (due checks, dedupe)
+  tests/test_jobs.py       stdlib unittest, no third-party deps
 docs/
   incident-undici-cause.md write-up of the failure this setup came from
 ```
@@ -56,6 +59,7 @@ by the planner and by `scripts/check-lockfile.mjs` in the workflow.
 npm ci
 npm run typecheck
 npm test
+python -m unittest discover -s worker/tests -v
 ```
 
 Requires Node 22.18+ (tests run the TypeScript sources directly via type
