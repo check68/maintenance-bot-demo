@@ -1,0 +1,52 @@
+name: dependency-bump
+
+on:
+  schedule:
+    # Mondays, 06:00 UTC. One package per PR, revert on red.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-one-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - id: plan
+        run: node scripts/plan-bump.mjs
+
+      - name: respect the guardrail
+        if: steps.plan.outputs.action != 'open-pr'
+        run: |
+          echo "guardrail: ${{ steps.plan.outputs.reason }}"
+          exit 0
+
+      - run: npm install "${{ steps.plan.outputs.package }}@latest"
+
+      - name: enforce the lockfile cap
+        run: node scripts/check-lockfile.mjs
+
+      - run: npm test
+
+      - uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bot/bump-${{ steps.plan.outputs.package }}
+          title: "deps: bump ${{ steps.plan.outputs.package }}"
+          commit-message: "deps: bump ${{ steps.plan.outputs.package }}"
+          body: |
+            One package per PR.
+
+            If CI goes red twice in a row the bot stops and pings a human instead of
+            chasing the dependency tree. Wide lockfile diffs are rejected before a PR
+            is opened.

@@ -1,0 +1,19 @@
+{
+  "name": "maintenance-bot-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Sanitized demo of an unattended repo-maintenance loop: test-first fixes, CI in GitHub and Gitea Actions, dependency-bump guardrails.",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test src/guardrails.test.ts src/http/retry.test.ts src/bot/maintenance.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.7.2"
+  },
+  "license": "MIT"
+}
